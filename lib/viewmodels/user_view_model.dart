@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../models/user.dart';
-import '../repositories/in_memory_user_repository.dart';
+import '../repositories/user_repository_factory.dart';
 import '../repositories/user_repository.dart';
 
 part 'user_view_model.g.dart';
@@ -110,5 +110,5 @@ class UserViewModel extends _$UserViewModel {
 
 @riverpod
 UserRepository userRepository(UserRepositoryRef ref) {
-  return InMemoryUserRepository();
+  return createUserRepository();
 }

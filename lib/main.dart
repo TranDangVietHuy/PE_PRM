@@ -14,9 +14,13 @@ class UserManagerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'User Manager',
+      title: 'User Management',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0F766E)),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF0F766E),
+          foregroundColor: Colors.white,
+        ),
         useMaterial3: true,
       ),
       home: const UserListScreen(),

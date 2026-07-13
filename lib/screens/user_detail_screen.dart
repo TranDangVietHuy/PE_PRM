@@ -35,7 +35,19 @@ class UserDetailScreen extends StatelessWidget {
               const SizedBox(height: 12),
               const Text('Họ và tên'),
               const SizedBox(height: 4),
-              Text(user.fullName, key: const Key('detail_fullname')),
+              Text(
+                user.fullName,
+                key: const Key('detail_fullname'),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF111827),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Container(
+                height: 1,
+                color: const Color(0xFFD1D5DB),
+              ),
               const SizedBox(height: 12),
               const Text('Email'),
               const SizedBox(height: 4),

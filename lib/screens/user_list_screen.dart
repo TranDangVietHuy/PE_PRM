@@ -34,14 +34,15 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
     final state = ref.watch(userViewModelProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('User Manager')),
+      appBar: AppBar(
+        title: const Text('User Management'),
+      ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             final isLandscape = constraints.maxWidth >= constraints.maxHeight;
+            final isTablet = constraints.maxWidth >= 600;
 
-            // TODO: Landscape hiển thị form bên trái, danh sách 2 cột bên phải.
-            // Portrait hiển thị form phía trên, danh sách 1 cột phía dưới.
             return Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
@@ -51,7 +52,7 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
                   Expanded(
                     child: _buildUserList(
                       users: state.items,
-                      isLandscape: isLandscape,
+                      crossAxisCount: isTablet ? 2 : (isLandscape ? 2 : 1),
                     ),
                   ),
                 ],
@@ -107,6 +108,14 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
                 child: ElevatedButton(
                   key: const Key('btn_add_user'),
                   onPressed: _handleSubmit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0F766E),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   child:
                       Text(_editingUser == null ? 'ADD USER' : 'UPDATE USER'),
                 ),
@@ -116,6 +125,14 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
                 OutlinedButton(
                   key: const Key('btn_cancel_edit'),
                   onPressed: _cancelEdit,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFB45309),
+                    side: const BorderSide(color: Color(0xFFB45309)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   child: const Text('CANCEL'),
                 ),
               ],
@@ -128,15 +145,12 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
 
   Widget _buildUserList({
     required List<UserModel> users,
-    required bool isLandscape,
+    required int crossAxisCount,
   }) {
-    // TODO: Portrait dùng 1 cột, landscape dùng 2 cột.
-    // Lưu ý: kể cả users rỗng vẫn phải render widget Key('user_list').
-    // Không thay bằng Center/Text riêng, vì testcase kiểm tra list rỗng không crash.
     return GridView.builder(
       key: const Key('user_list'),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: isLandscape ? 2 : 1,
+        crossAxisCount: crossAxisCount,
         mainAxisExtent: 104,
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
@@ -166,10 +180,20 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
                       children: <Widget>[
                         Text(
                           user.fullName,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF111827),
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 4),
+                        Container(
+                          height: 1,
+                          width: double.infinity,
+                          color: const Color(0xFFD1D5DB),
+                        ),
+                        const SizedBox(height: 4),
                         Text(
                           user.email,
                           maxLines: 1,
@@ -202,10 +226,6 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
   }
 
   String? _validateFullName(String? value) {
-    // TODO: Bắt buộc nhập, tối thiểu 2 ký tự.
-    // Message yêu cầu:
-    // - Họ và tên không được để trống
-    // - Họ và tên tối thiểu 2 ký tự
     final fullName = value?.trim() ?? '';
 
     if (fullName.isEmpty) {
@@ -220,8 +240,6 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
   }
 
   String? _validateEmail(String? value) {
-    // TODO: Bắt buộc nhập đúng định dạng email.
-    // Message yêu cầu: Email không đúng định dạng
     final email = value?.trim() ?? '';
     final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
 
@@ -233,9 +251,6 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
   }
 
   String? _validateAvatar(String? value) {
-    // TODO: Bắt buộc có avatar khi submit.
-    // Có thể dùng defaultAvatarPath làm ảnh hiển thị mặc định khi avatar rỗng.
-    // Message yêu cầu: Vui lòng chọn ảnh đại diện
     if (value == null || value.trim().isEmpty) {
       return 'Vui lòng chọn ảnh đại diện';
     }
@@ -244,15 +259,6 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
   }
 
   Future<void> _handleSubmit() async {
-    // TODO:
-    // 1. Validate form bằng _formKey.currentState!.validate().
-    //    Nếu validate fail trong lúc đang sửa (_editingUser != null), hãy clear
-    //    _fullNameController và _avatarController rồi setState().
-    //    Lý do: testcase kiểm tra tên cũ chỉ xuất hiện 1 lần trong danh sách,
-    //    không bị trùng với text đang prefill trong form edit.
-    // 2. Nếu đang thêm mới, gọi ref.read(userViewModelProvider.notifier).addUser.
-    // 3. Nếu đang sửa, gọi updateUser với dữ liệu mới.
-    // 4. Sau khi lưu thành công: đặt _editingUser = null, reset form, clear cả 3 controller.
     if (!_formKey.currentState!.validate()) {
       if (_editingUser != null) {
         _fullNameController.clear();
@@ -296,7 +302,6 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
   }
 
   void _startEdit(UserModel user) {
-    // TODO: Gán _editingUser và điền dữ liệu user vào 3 TextEditingController.
     setState(() {
       _editingUser = user;
       _fullNameController.text = user.fullName;
@@ -306,8 +311,6 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
   }
 
   void _cancelEdit() {
-    // TODO: Huỷ sửa, đặt _editingUser = null, reset form, clear cả 3 controller.
-    // Sau khi huỷ, bản nháp đang gõ không được còn xuất hiện trên UI.
     setState(() {
       _editingUser = null;
       _formKey.currentState?.reset();
@@ -318,10 +321,6 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
   }
 
   Future<void> _confirmDelete(UserModel user) async {
-    // TODO: Hiển thị AlertDialog key delete_confirm_dialog.
-    // Nút huỷ: Key('btn_cancel_delete'), text 'Huỷ'.
-    // Nút xác nhận: Key('btn_confirm_delete'), text 'Xoá'.
-    // Chỉ gọi deleteUser khi người dùng xác nhận.
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -349,7 +348,6 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
   }
 
   void _openDetail(UserModel user) {
-    // TODO: Navigator.push sang UserDetailScreen(user: user).
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => UserDetailScreen(user: user),

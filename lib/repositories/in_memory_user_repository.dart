@@ -40,9 +40,9 @@ class InMemoryUserRepository implements UserRepository {
     // TODO: Tìm user cùng id và cập nhật thông tin.
     final index = _users.indexWhere((item) => item.id == user.id);
 
-  if (index != -1) {
-    _users[index] = user;
-  }
+    if (index != -1) {
+      _users[index] = user;
+    }
   }
 
   @override
@@ -51,3 +51,5 @@ class InMemoryUserRepository implements UserRepository {
     _users.removeWhere((user) => user.id == id);
   }
 }
+
+UserRepository createUserRepository() => InMemoryUserRepository();
